@@ -86,7 +86,7 @@ export class WavesEditor {
               if (Number(enemy.wave) === Number(this._currentWaveIndex)) {
                 return `<div class="waves__content--item"><p>${enemy.types.map((el) => el.name).join(', ')}</p>${
                   this._paths.length
-                    ? `<p>Волна</p><select value="${enemy.path}">${this._paths
+                    ? `<p>Путь</p><select value="${enemy.path}">${this._paths
                         .map(
                           (path: any) => `<option value="${path}, '${enemy.id}'" ${path === enemy.path ? 'selected' : ''}>${path}</option>`,
                         )
@@ -113,7 +113,15 @@ export class WavesEditor {
         this._waves = Object.values(this._waves).map((waves) => {
           return waves.filter((wave: any) => wave.id !== id);
         });
-        console.log(this._waves);
+
+        if (Object.keys(this._allEnemies).length === 0) {
+          this._content.childNodes.forEach((node) => {
+            //@ts-ignore
+            if (node.className == 'waves__content--item') {
+              this._content.removeChild(node);
+            }
+          });
+        }
 
         this.updateItems();
       };
