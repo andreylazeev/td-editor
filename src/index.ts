@@ -23,6 +23,7 @@ const gridButton: HTMLElement = document.querySelector('#grid_button');
 const pathButton: HTMLElement = document.querySelector('#path_button');
 const pathSaveButton: HTMLElement = document.querySelector('#pathsave_button');
 const clearEmptyButton: HTMLElement = document.querySelector('#clear_empty_button');
+const clearPathButton: HTMLElement = document.querySelector('#clear_path_button');
 
 let MATRIX: Array<string[][]> = [];
 
@@ -107,6 +108,15 @@ function createNavigationButton(text: string, img?: string, tile?: any) {
 
   navigation.appendChild(button);
 }
+
+clearPathButton.onclick = () => {
+  pathContainer.removeChildren();
+  pathLinesContainer.removeChildren();
+  pathRoadsIndex = 0;
+  pathRoads = [];
+  paths = {};
+  wavesEditor.updatePaths(Object.keys(paths));
+};
 
 createNavigationButton('Пустой блок');
 createNavigationButton('Начало пути', tilePathStart, PATH_START);
