@@ -14,6 +14,7 @@ import tileStoneFirst from './images/stone_1.png';
 import tileStoneSecond from './images/stone_2.png';
 import { Graph, astar } from 'javascript-astar';
 import { WavesEditor } from './entities/wavesEditor';
+import { GridGenerator } from './entities/gridGenerator';
 
 const navigation: HTMLElement = document.querySelector('.navigation');
 const setInput: HTMLInputElement = document.querySelector('#set_input');
@@ -22,6 +23,8 @@ const gridButton: HTMLElement = document.querySelector('#grid_button');
 const pathButton: HTMLElement = document.querySelector('#path_button');
 const pathSaveButton: HTMLElement = document.querySelector('#pathsave_button');
 const clearEmptyButton: HTMLElement = document.querySelector('#clear_empty_button');
+
+let MATRIX: Array<string[][]> = [];
 
 const ATTRIBUTE_TILE = 'data-tile';
 
@@ -56,7 +59,30 @@ let pathRoads: { start: [number, number] | []; end: [number, number] | []; id: s
 
 let paths: Record<string, { x: number; y: number }[]> = {};
 
+const gridGenerator = new GridGenerator();
 export const wavesEditor = new WavesEditor(document.querySelector('.waves'), Object.keys(paths));
+
+gridGenerator.onGenerate = (matrix: any) => {
+  MATRIX = [];
+  MATRIX = matrix;
+  for (let i = 0; i < HEIGHT / CELL_SIZE; i++) {
+    if (!MATRIX[i]) MATRIX[i] = [];
+
+    for (let j = 0; j < WIDTH / CELL_SIZE; j++) {
+      if (!MATRIX[i][j]) {
+        MATRIX[i][j] = [];
+      }
+
+      if (!MATRIX[i][j][0]) {
+        MATRIX[i][j][0] = EMPTY;
+      }
+      if (!MATRIX[i][j][1]) {
+        MATRIX[i][j][1] = EMPTY;
+      }
+    }
+  }
+  update();
+};
 
 let waves: any[] = [];
 
@@ -268,8 +294,6 @@ navigation.onclick = (e) => {
     activeTile = tile;
   }
 };
-
-let MATRIX: Array<string[][]> = [];
 
 for (let i = 0; i < HEIGHT / CELL_SIZE; i++) {
   if (!MATRIX[i]) MATRIX[i] = [];

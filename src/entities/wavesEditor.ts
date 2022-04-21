@@ -35,6 +35,7 @@ export class WavesEditor {
     if (paths.length >= this._paths.length) {
       this._paths = paths;
       this.updateItems();
+      console.log(this._paths);
     }
   };
 
