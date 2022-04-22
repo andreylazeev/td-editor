@@ -15,6 +15,7 @@ import tileStoneSecond from './images/stone_2.png';
 import { Graph, astar } from 'javascript-astar';
 import { WavesEditor } from './entities/wavesEditor';
 import { GridGenerator } from './entities/gridGenerator';
+import { fillEmpties } from './utils';
 
 const navigation: HTMLElement = document.querySelector('.navigation');
 const setInput: HTMLInputElement = document.querySelector('#set_input');
@@ -25,15 +26,15 @@ const pathSaveButton: HTMLElement = document.querySelector('#pathsave_button');
 const clearEmptyButton: HTMLElement = document.querySelector('#clear_empty_button');
 const clearPathButton: HTMLElement = document.querySelector('#clear_path_button');
 
-let MATRIX: Array<string[][]> = [];
+export let MATRIX: Array<string[][]> = [];
 
 const ATTRIBUTE_TILE = 'data-tile';
 
-const WIDTH = 4800;
-const HEIGHT = 4800;
-const CELL_SIZE = 50;
+export const WIDTH = 4800;
+export const HEIGHT = 4800;
+export const CELL_SIZE = 60;
 
-const EMPTY = 'empty';
+export const EMPTY = 'empty';
 const ROAD = 'road';
 const ROAD_T_L = 'road-t-l';
 const ROAD_T_R = 'road-t-r';
@@ -66,29 +67,18 @@ export const wavesEditor = new WavesEditor(document.querySelector('.waves'), Obj
 gridGenerator.onGenerate = (matrix: any) => {
   MATRIX = [];
   MATRIX = matrix;
-  for (let i = 0; i < HEIGHT / CELL_SIZE; i++) {
-    if (!MATRIX[i]) MATRIX[i] = [];
-
-    for (let j = 0; j < WIDTH / CELL_SIZE; j++) {
-      if (!MATRIX[i][j]) {
-        MATRIX[i][j] = [];
-      }
-
-      if (!MATRIX[i][j][0]) {
-        MATRIX[i][j][0] = EMPTY;
-      }
-      if (!MATRIX[i][j][1]) {
-        MATRIX[i][j][1] = EMPTY;
-      }
-    }
-  }
+  fillEmpties();
   update();
 };
 
 let waves: any[] = [];
 
-wavesEditor.onEnemyAdd = (a: any) => {
+let allEnemies: Record<string, { types: { id: number; name: string }[]; id: string; path: undefined | string; wave: number | undefined }> =
+  {};
+
+wavesEditor.onEnemyAdd = (a: any, b: any) => {
   waves = a;
+  allEnemies = b;
   // console.log(Object.values(a).map((el: any) => el.map((elem: any) => ({ enemies: elem }))));
 };
 
@@ -498,7 +488,7 @@ getButton.onclick = () => {
     const enemies = wave.map((waveType: any) => ({ types: waveType.types.map((el: any) => el.id), path: waveType.path }));
     correctWaves.push({ enemies });
   });
-  downloadAsFile({ stage: gameMatrix, paths, waves: correctWaves }, 'matrix.json');
+  downloadAsFile({ stage: gameMatrix, paths, pathRoads, waves: correctWaves, editorWaves: waves, allEnemies }, 'matrix.json');
 };
 export enum Cells {
   'grass-dark',
@@ -524,7 +514,71 @@ setInput.oninput = () => {
   reader.onload = () => {
     try {
       const array = JSON.parse(String(reader.result));
-      MATRIX = array;
+      // MATRIX = array;
+      // update();
+      const gameMatrix = array.stage.map((row: any) =>
+        row.map((el: any) => {
+          let elFirst = EMPTY;
+          let elSecond = EMPTY;
+
+          switch (el[0]) {
+            case -1:
+              elFirst = EMPTY;
+              break;
+            case 0:
+              elFirst = GRASS_DARK;
+              break;
+            case 1:
+              elFirst = GRASS_LIGHT;
+              break;
+            case 2:
+              elFirst = ROAD;
+              break;
+            case 9:
+              elFirst = WATER_WALL;
+              break;
+            case 10:
+              elFirst = WATER_LIGHT;
+              break;
+          }
+          switch (el[1]) {
+            case 3:
+              elSecond = ROAD_B_R;
+              break;
+            case 4:
+              elSecond = ROAD_B_L;
+              break;
+            case 5:
+              elSecond = ROAD_T_R;
+              break;
+            case 6:
+              elSecond = ROAD_T_L;
+              break;
+            case 7:
+              elSecond = STONE_1;
+              break;
+            case 8:
+              elSecond = STONE_2;
+              break;
+          }
+          return [elFirst, elSecond];
+        }),
+      );
+      MATRIX = gameMatrix;
+      fillEmpties();
+      paths = array.paths;
+      pathRoads = array.pathRoads;
+      wavesEditor.updatePaths(Object.keys(paths));
+      Object.values(paths).forEach((path) => {
+        path.forEach((road) => {
+          //@ts-ignore
+          drawLines(road.x, road.y, road.id);
+        });
+      });
+      waves = array.editorWaves;
+      allEnemies = array.allEnemies;
+      wavesEditor.import(allEnemies, waves);
+
       update();
     } catch {
       alert('Упс, чет не так');

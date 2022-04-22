@@ -20,7 +20,7 @@ export class WavesEditor {
   private _currentWaveIndex = 0;
   private _wavesBlock: HTMLDivElement;
 
-  public onEnemyAdd: (enemies: any) => any | null = null;
+  public onEnemyAdd: (enemies: any, allEnemies: any) => any | null = null;
 
   private _allEnemies: Record<
     string,
@@ -37,6 +37,13 @@ export class WavesEditor {
       this.updateItems();
       console.log(this._paths);
     }
+  };
+
+  public import = (allEnemies: any, waves: any) => {
+    this._allEnemies = allEnemies;
+    this._waves = waves;
+    this.updateContent();
+    this.updateItems();
   };
 
   private _toggleEditor = () => {
@@ -56,7 +63,7 @@ export class WavesEditor {
     // console.log(this._allEnemies);
   };
 
-  private updateItems = (type?: string) => {
+  public updateItems = (type?: string) => {
     if (this._enemiesItems.length > 0) {
       const id = makeid(6);
       this._allEnemies = { ...this._allEnemies, [id]: { types: this._enemiesItems, id, path: undefined, wave: this._currentWaveIndex } };
@@ -98,7 +105,7 @@ export class WavesEditor {
             .join('')}
       `,
       );
-      this._updateContent();
+      this.updateContent();
     }
 
     this._enemiesSelects = this._content.querySelectorAll('select');
@@ -135,10 +142,10 @@ export class WavesEditor {
         }
       }
     });
-    this.onEnemyAdd(this._waves);
+    this.onEnemyAdd(this._waves, this._allEnemies);
   };
 
-  private _updateContent = () => {
+  public updateContent = () => {
     this._wavesBlock.innerHTML = '';
     Object.entries(this._waves).forEach((el) => {
       let elem = document.createElement('span');
@@ -157,7 +164,7 @@ export class WavesEditor {
 
   private _selectWave = (type: number) => {
     this._currentWaveIndex = type;
-    this._updateContent();
+    this.updateContent();
   };
 
   constructor(private _editor: HTMLElement, private _paths: any) {
@@ -212,7 +219,7 @@ export class WavesEditor {
     this._createWaveButton.onclick = () => {
       this._waveIndex += 1;
       this._waves[this._waveIndex] = [];
-      this._updateContent();
+      this.updateContent();
     };
     this._saveButton.onclick = () => {
       this.updateItems();
