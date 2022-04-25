@@ -15,7 +15,7 @@ import tileStoneSecond from './images/stone_2.png';
 import { Graph, astar } from 'javascript-astar';
 import { WavesEditor } from './entities/wavesEditor';
 import { GridGenerator } from './entities/gridGenerator';
-import { fillEmpties } from './utils';
+import { fillEmpties, makeid } from './utils';
 
 const navigation: HTMLElement = document.querySelector('.navigation');
 const setInput: HTMLInputElement = document.querySelector('#set_input');
@@ -488,7 +488,10 @@ getButton.onclick = () => {
     const enemies = wave.map((waveType: any) => ({ types: waveType.types.map((el: any) => el.id), path: waveType.path }));
     correctWaves.push({ enemies });
   });
-  downloadAsFile({ stage: gameMatrix, paths, pathRoads, waves: correctWaves, editorWaves: waves, allEnemies }, 'matrix.json');
+  downloadAsFile(
+    { id: makeid(15), stage: gameMatrix, paths, pathRoads, waves: correctWaves, editorWaves: waves, allEnemies },
+    'matrix.json',
+  );
 };
 export enum Cells {
   'grass-dark',
