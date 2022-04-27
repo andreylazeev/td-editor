@@ -23,33 +23,42 @@
 
       .navigation {
         position: fixed;
-        right: 20px;
-        top: 20px;
-        bottom: 20px;
+        left: 10px;
+        right: 10px;
+        top: 10px;
         padding: 10px;
+        height: 80px;
         background: #ffffff;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
+        justify-content: flex-start;
+        overflow: scroll;
       }
+
       .waves {
         position: fixed;
-        right: 160px;
-        bottom: 20px;
-        bottom: 70px;
+        right: 10px;
+        bottom: 10px;
         width: 400px;
         display: grid;
         grid-template-rows: auto 1fr auto;
       }
+
       .waves__header {
         height: 35px;
         background: #000;
         padding: 5px;
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: space-between;
         color: white;
         font-family: sans-serif;
       }
+
+      .waces__header button {
+        color: white;
+      }
+
       .waves__content {
         padding: 15px;
         min-height: 300px;
@@ -58,18 +67,21 @@
         flex-direction: column;
         row-gap: 15px;
       }
+
       .waves__content--item {
         display: grid;
         grid-template-columns: 1fr auto auto auto;
         align-items: center;
         grid-column-gap: 10px;
       }
+
       .waves__footer {
         padding: 10px;
         display: grid;
         gap: 5px;
         background: #ffffff;
       }
+
       .waves__enemies {
         margin: 5px;
         padding: 5px;
@@ -79,16 +91,20 @@
         right: 0;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
       }
+
       .waves__enemies--images {
         display: flex;
         column-gap: 15px;
       }
+
       .waves__enemies--preview {
         margin: 5px 0;
       }
+
       .waves__enemies img {
         height: 70px;
       }
+
       .waves__nav {
         display: flex;
         column-gap: 20px;
@@ -96,6 +112,7 @@
         max-width: 370px;
         padding-bottom: 10px;
       }
+
       .waves__nav span {
         display: inline;
         min-width: 40px;
@@ -106,40 +123,41 @@
         background: white;
         border-radius: 50%;
       }
+
       .waves__nav span.active {
         color: white;
         background: red;
       }
+
       .button {
-        width: 100px;
-        height: 100px;
+        width: 60px;
+        height: 60px;
         border: none;
         background: none;
-        background-size: contain;
+        background-size: cover;
         background-position: 50%;
         background-repeat: no-repeat;
-      }
-      .button:not(:last-child) {
-        margin-bottom: 10px;
-      }
-      .button--active {
-        border: 5px solid red;
-        transform: scale(0.5);
+        box-sizing: border-box;
       }
 
-      .header {
+      .button--active {
+        border: 2px solid red;
+      }
+
+      .footer {
         position: fixed;
         bottom: 10px;
         left: 10px;
       }
 
-      .header button {
+      .footer button {
         padding: 10px;
       }
 
       .hidden {
         visibility: hidden;
       }
+
       .closed {
         display: none;
       }
@@ -153,7 +171,7 @@
     </style>
   </head>
   <body>
-    <div class="header">
+    <div class="footer">
       <button id="get_button">Получить матрицу</button>
       <button id="grid_button">Сетка</button>
       <button id="clear_empty_button" style="display: none">убрать пустые клетки</button>
@@ -165,7 +183,9 @@
     </div>
     <div class="navigation"></div>
     <div class="waves">
-      <div class="waves__header">редактор волн</div>
+      <div class="waves__header">
+        <span>редактор волн</span>
+      </div>
       <div class="waves__content"></div>
       <div class="waves__footer">
         <div class="waves__enemies hidden">

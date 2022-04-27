@@ -1,4 +1,4 @@
-import { CELL_SIZE, EMPTY, HEIGHT, MATRIX, WIDTH } from '.';
+import { CELL_SIZE, EMPTY, HEIGHT, MATRIX, WIDTH } from '.'
 
 export function makeid(length: number) {
   var result = '';

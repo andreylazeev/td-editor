@@ -15,6 +15,7 @@ import tileStoneSecond from './images/stone_2.png';
 import { Graph, astar } from 'javascript-astar';
 import { WavesEditor } from './entities/wavesEditor';
 import { GridGenerator } from './entities/gridGenerator';
+import { attachKeyboardListeners, attachMouseListeners } from './listeners'
 import { fillEmpties, makeid } from './utils';
 
 const navigation: HTMLElement = document.querySelector('.navigation');
@@ -26,9 +27,19 @@ const pathSaveButton: HTMLElement = document.querySelector('#pathsave_button');
 const clearEmptyButton: HTMLElement = document.querySelector('#clear_empty_button');
 const clearPathButton: HTMLElement = document.querySelector('#clear_path_button');
 
-export let MATRIX: Array<string[][]> = [];
+export type Matrix = Array<string[][]>
+export let MATRIX: Matrix = [];
+
+export const getMatrix = () => MATRIX
+
+export function setMatrix(nextMatrix: Matrix) {
+    MATRIX = nextMatrix
+    fillEmpties();
+    update()
+}
 
 const ATTRIBUTE_TILE = 'data-tile';
+const ATTRIBUTE_KEY_CODE = 'data-keycode';
 
 export const WIDTH = 4800;
 export const HEIGHT = 4800;
@@ -82,13 +93,16 @@ wavesEditor.onEnemyAdd = (a: any, b: any) => {
   // console.log(Object.values(a).map((el: any) => el.map((elem: any) => ({ enemies: elem }))));
 };
 
-function createNavigationButton(text: string, img?: string, tile?: any) {
+function createNavigationButton(text: string, keyCode: string, img?: string, tile?: any) {
   const button = document.createElement('button');
   button.classList.add(BUTTON_CLASS);
   if (activeTile === tile) {
     button.classList.add(BUTTON_CLASS_ACTIVE);
   }
+
   button.setAttribute(ATTRIBUTE_TILE, String(tile || EMPTY));
+  button.setAttribute(ATTRIBUTE_KEY_CODE, String(keyCode));
+  button.innerText = keyCode;
 
   if (tile) {
     button.style.backgroundImage = `url(${img})`;
@@ -108,31 +122,32 @@ clearPathButton.onclick = () => {
   wavesEditor.updatePaths(Object.keys(paths));
 };
 
-createNavigationButton('Пустой блок');
-createNavigationButton('Начало пути', tilePathStart, PATH_START);
-createNavigationButton('Конец пути', tilePathEnd, PATH_END);
-createNavigationButton('', tileRoad, ROAD);
-createNavigationButton('', tileRoadTR, ROAD_T_R);
-createNavigationButton('', tileRoadTL, ROAD_T_L);
-createNavigationButton('', tileRoadBR, ROAD_B_R);
-createNavigationButton('', tileRoadBL, ROAD_B_L);
-createNavigationButton('', tileGrassDark, GRASS_DARK);
-createNavigationButton('', tileGrassLight, GRASS_LIGHT);
-createNavigationButton('', tileStoneFirst, STONE_1);
-createNavigationButton('', tileStoneSecond, STONE_2);
-createNavigationButton('', tileWaterLight, WATER_LIGHT);
-createNavigationButton('', tileWaterWall, WATER_WALL);
+createNavigationButton('Пустой блок (d)', 'd');
+createNavigationButton('Начало пути', 'w', tilePathStart, PATH_START);
+createNavigationButton('Конец пути', 'e', tilePathEnd, PATH_END);
+createNavigationButton('', '1', tileRoad, ROAD);
+createNavigationButton('', '2', tileGrassDark, GRASS_DARK);
+createNavigationButton('', '3', tileGrassLight, GRASS_LIGHT);
+createNavigationButton('', '4', tileStoneFirst, STONE_1);
+createNavigationButton('', '5', tileStoneSecond, STONE_2);
+createNavigationButton('', '6', tileRoadTR, ROAD_T_R);
+createNavigationButton('', '7', tileRoadTL, ROAD_T_L);
+createNavigationButton('', '8', tileRoadBR, ROAD_B_R);
+createNavigationButton('', '9', tileRoadBL, ROAD_B_L);
+createNavigationButton('', 'q', tileWaterLight, WATER_LIGHT);
+createNavigationButton('', 'r', tileWaterWall, WATER_WALL);
 
 const gridContainer = new PIXI.Container();
 const pathContainer = new PIXI.Container();
 const pathLinesContainer = new PIXI.Container();
 const containerFirst = new PIXI.Container();
 
-const app = new PIXI.Application({
+export const app = new PIXI.Application({
   width: WIDTH,
   height: HEIGHT,
   backgroundAlpha: 0,
 });
+
 app.stage.addChild(gridContainer, containerFirst, pathContainer, pathLinesContainer);
 
 const drawLines = (x: number, y: number, id: string) => {
@@ -337,7 +352,7 @@ gridButton.onclick = () => {
   gridContainer.visible = !gridContainer.visible;
 };
 
-function update() {
+export function update() {
   containerFirst.removeChildren();
   pathContainer.removeChildren();
 
@@ -493,6 +508,7 @@ getButton.onclick = () => {
     'matrix.json',
   );
 };
+
 export enum Cells {
   'grass-dark',
   'grass-light',
@@ -597,44 +613,71 @@ setInput.oninput = () => {
   };
 };
 
-app.renderer.view.addEventListener('click', (e) => {
-  const HTML = document.documentElement;
-  const Y = Math.ceil((HTML.scrollTop + e.clientY) / CELL_SIZE) - 1;
-  const X = Math.ceil((HTML.scrollLeft + e.clientX) / CELL_SIZE) - 1;
+export function updateMatrixState(e: MouseEvent) {
+    const HTML = document.documentElement;
+    const Y = Math.ceil((HTML.scrollTop + e.clientY) / CELL_SIZE) - 1;
+    const X = Math.ceil((HTML.scrollLeft + e.clientX) / CELL_SIZE) - 1;
 
-  if (activeTile === PATH_START) {
-    pathRoads[pathRoadsIndex] = { ...pathRoads[pathRoadsIndex], start: [Y, X] };
-  } else if (activeTile === PATH_END) {
-    pathRoads[pathRoadsIndex] = { ...pathRoads[pathRoadsIndex], end: [Y, X], id: `${pathRoadsIndex}` };
-    pathRoadsIndex += 1;
-  } else {
-    switch (activeTile) {
-      case EMPTY:
-        MATRIX[Y][X][0] = activeTile;
-        MATRIX[Y][X][1] = activeTile;
-        break;
-      case GRASS_LIGHT:
-      case GRASS_DARK:
-      case WATER_LIGHT:
-      case WATER_WALL:
-        MATRIX[Y][X][0] = activeTile;
-        break;
-      case ROAD_B_L:
-      case ROAD_B_R:
-      case ROAD_T_R:
-      case ROAD_T_L:
-      case STONE_1:
-      case STONE_2:
-        if (MATRIX[Y][X][0] !== EMPTY) {
-          MATRIX[Y][X][1] = activeTile;
+    if (activeTile === PATH_START) {
+        pathRoads[pathRoadsIndex] = { ...pathRoads[pathRoadsIndex], start: [Y, X] };
+    } else if (activeTile === PATH_END) {
+        pathRoads[pathRoadsIndex] = { ...pathRoads[pathRoadsIndex], end: [Y, X], id: `${pathRoadsIndex}` };
+        pathRoadsIndex += 1;
+    } else {
+        switch (activeTile) {
+            case EMPTY:
+                MATRIX[Y][X][0] = activeTile;
+                MATRIX[Y][X][1] = activeTile;
+                break;
+            case GRASS_LIGHT:
+            case GRASS_DARK:
+            case WATER_LIGHT:
+            case WATER_WALL:
+                MATRIX[Y][X][0] = activeTile;
+                break;
+            case ROAD_B_L:
+            case ROAD_B_R:
+            case ROAD_T_R:
+            case ROAD_T_L:
+            case STONE_1:
+            case STONE_2:
+                if (MATRIX[Y][X][0] !== EMPTY) {
+                    MATRIX[Y][X][1] = activeTile;
+                }
+                break;
+            case ROAD:
+                if (MATRIX[Y][X][1] !== STONE_1 && MATRIX[Y][X][1] !== STONE_2) {
+                    MATRIX[Y][X][0] = activeTile;
+                }
+                break;
         }
-        break;
-      case ROAD:
-        if (MATRIX[Y][X][1] !== STONE_1 && MATRIX[Y][X][1] !== STONE_2) {
-          MATRIX[Y][X][0] = activeTile;
-        }
-        break;
     }
-  }
-  update();
-});
+
+    update();
+}
+
+export function setActiveNavigationElement(e: KeyboardEvent) {
+    const navigationButtons = document.querySelectorAll(`[${ATTRIBUTE_KEY_CODE}]`);
+
+    for (let i = 0 ; i < navigationButtons.length; i++) {
+        const keyCode = navigationButtons[i].getAttribute('data-keycode');
+
+        if (keyCode === e.key) {
+            const tile = navigationButtons[i].getAttribute('data-tile');
+
+            if (tile) {
+                document.querySelectorAll('.' + BUTTON_CLASS_ACTIVE).forEach((e: HTMLElement) => {
+                    e.classList.remove(BUTTON_CLASS_ACTIVE);
+                });
+
+                navigationButtons[i].classList.add(BUTTON_CLASS_ACTIVE);
+                activeTile = tile;
+            }
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    attachMouseListeners()
+    attachKeyboardListeners()
+})
