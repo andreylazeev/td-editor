@@ -1,4 +1,3 @@
-import './wheelzoom.ts'
 import { app, getMatrix, Matrix, setActiveNavigationElement, setMatrix, updateMatrixState } from './index'
 const changesHistory: Array<Matrix> = [[]];
 
