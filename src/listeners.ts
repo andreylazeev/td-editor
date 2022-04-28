@@ -25,9 +25,7 @@ export function attachMouseListeners() {
 export function attachKeyboardListeners() {
   document.body.addEventListener('keydown', (e) => {
     setActiveNavigationElement(e);
-    console.log(e.ctrlKey);
-
-    if ((e.key === 'z' && e.ctrlKey) || (e.key === 'z' && e.ctrlKey)) {
+    if ((e.key === 'я' && e.ctrlKey) || (e.key === 'z' && e.ctrlKey)) {
       if (changesHistory.length > 1) {
         setMatrix(changesHistory[changesHistory.length - 1]);
         changesHistory.pop();
